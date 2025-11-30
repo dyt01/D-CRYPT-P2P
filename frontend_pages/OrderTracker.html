@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>D-CRYPT Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* --- MODERN CRYPTO THEME --- */
+      :root {
+        --bg-color: #0b0e14;
+        --card-bg: #151b23;
+        --accent-blue: #3b82f6;
+        --accent-glow: rgba(59, 130, 246, 0.5);
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --text-main: #ffffff;
+        --text-muted: #94a3b8;
+        --border: #2d3748;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg-color) 70%);
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      /* Main Card */
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 40px;
+        width: 100%;
+        max-width: 450px; /* Optimal reading width for desktop */
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        margin-bottom: 24px;
+        transition: transform 0.3s ease;
+      }
+
+      /* Subtle top glow line */
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+        opacity: 0.5;
+      }
+
+      .logo-area {
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(to right, #fff, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+      }
+
+      p.sub {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-top: 8px;
+      }
+
+      /* Input Styling */
+      .input-group {
+        position: relative;
+        margin-bottom: 24px;
+      }
+
+      .input-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      input {
+        width: 100%;
+        padding: 16px;
+        background-color: #0d1117;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        color: white;
+        font-size: 16px; /* Prevents zoom on iOS */
+        outline: none;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+        -webkit-appearance: none; /* Removes default iOS styling */
+      }
+
+      input:focus {
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      }
+
+      input::placeholder {
+        color: #475569;
+      }
+
+      /* Action Button */
+      button {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        position: relative;
+        overflow: hidden;
+        -webkit-tap-highlight-color: transparent; /* Removes tap highlight on mobile */
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      button:disabled {
+        background: var(--border);
+        color: var(--text-muted);
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      /* Result Card */
+      #result-area {
+        display: none;
+        margin-top: 32px;
+        padding: 24px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .type-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Status Badges */
+      .badge {
+        font-size: 11px;
+        font-weight: 800;
+        padding: 6px 12px;
+        border-radius: 99px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .badge.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+      }
+
+      .badge.pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+      }
+
+      .badge.failed {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+
+      /* Data Display */
+      .info-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: block;
+      }
+
+      .message-box {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #e2e8f0;
+        margin-bottom: 20px;
+        word-wrap: break-word; /* Prevents overflow on mobile */
+      }
+
+      .hash-container {
+        background: #000000;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px;
+        position: relative;
+        margin-bottom: 16px;
+        overflow-x: auto; /* Allows scrolling if hash is too long on mobile */
+      }
+
+      .hash-text {
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        color: var(--success);
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .footer-time {
+        font-size: 11px;
+        color: #475569;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+
+      /* Error Box */
+      .error-box {
+        display: none;
+        margin-top: 20px;
+        padding: 16px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 12px;
+        color: var(--danger);
+        font-size: 14px;
+        text-align: center;
+        animation: slideUp 0.3s ease;
+      }
+
+      /* SVG Icons */
+      .icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+      /* Footer Styling */
+      .site-footer {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 11px;
+        opacity: 0.6;
+        margin-top: 10px;
+        letter-spacing: 0.5px;
+        line-height: 1.5;
+        max-width: 90%;
+      }
+
+      /* --- MOBILE OPTIMIZATION --- */
+      @media (max-width: 600px) {
+        body {
+          padding: 16px;
+          justify-content: center; /* Center vertically on mobile too */
+        }
+
+        .card {
+          padding: 24px; /* Reduce padding for more screen space */
+          border-radius: 20px;
+        }
+
+        h2 {
+          font-size: 24px;
+        }
+
+        /* Adjust Result Header stacking if needed */
+        .result-header {
+          flex-wrap: wrap; 
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="card">
+      <div class="logo-area">
+        <h2>D-CRYPT P2P</h2>
+        <p class="sub">Secure Order Status Tracker</p>
+      </div>
+
+      <div class="input-group">
+        <label for="orderId">Order ID</label>
+        <input type="text" id="orderId" placeholder="e.g. CTB8829, S2210...">
+      </div>
+
+      <button id="btnTrack" onclick="findOrder()">
+        TRACK ORDER
+      </button>
+
+      <div id="error-msg" class="error-box"></div>
+
+      <div id="result-area">
+        
+        <div class="result-header">
+          <div class="type-label">
+            <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span id="displayType">--</span>
+          </div>
+          <div id="displayBadge" class="badge">Checking...</div>
+        </div>
+
+        <div>
+          <span class="info-label">Status Message</span>
+          <div id="displayMessage" class="message-box">--</div>
+        </div>
+
+        <div id="hash-section" style="display:none;">
+          <span class="info-label" id="hashLabel">Transaction Hash</span>
+          <div class="hash-container">
+            <div id="displayHash" class="hash-text">--</div>
+          </div>
+        </div>
+
+        <div class="footer-time">
+          <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="displayTime">--</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="site-footer">
+      D-CRYPT P2P • DEVELOPED FOR EDUCATIONAL PURPOSES ONLY
+    </div>
+
+    <script>
+      // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+      const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL";
+
+      function findOrder() {
+        var idInput = document.getElementById('orderId');
+        var btn = document.getElementById('btnTrack');
+        var errorBox = document.getElementById('error-msg');
+        var resultArea = document.getElementById('result-area');
+
+        var orderId = idInput.value.trim();
+        if (!orderId) return;
+
+        // UI Loading State
+        btn.innerHTML = '<span style="opacity:0.8">SEARCHING...</span>';
+        btn.disabled = true;
+        errorBox.style.display = 'none';
+        resultArea.style.display = 'none';
+
+        // Prepare POST request (Assuming your script handles "action: track")
+        // NOTE: Your Google Script must be set to handle POST requests or GET requests for this to work.
+        const payload = {
+            action: "TRACK",
+            orderId: orderId
+        };
+
+        fetch(SCRIPT_URL, {
+            method: "POST", 
+            body: JSON.stringify(payload) 
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = "TRACK ORDER";
+            btn.disabled = false;
+
+            if (data.success || data.result === "success") {
+              // Normalize data structure if needed depending on your script return
+              renderResult(data);
+            } else {
+              showError(data.message || "Order not found or invalid ID.");
+            }
+        })
+        .catch(error => {
+            btn.innerHTML = "TRACK ORDER";
+            btn.disabled = false;
+            showError("Connection error. Please check your internet or script URL.");
+            console.error(error);
+        });
+      }
+
+      function renderResult(data) {
+        var resultArea = document.getElementById('result-area');
+        var badge = document.getElementById('displayBadge');
+        var hashSection = document.getElementById('hash-section');
+
+        // 1. Fill Text Data
+        document.getElementById('displayType').textContent = data.type || "ORDER";
+        document.getElementById('displayMessage').textContent = data.adminMessage || data.message || "No message available";
+        document.getElementById('displayTime').textContent = data.timestamp || new Date().toLocaleString();
+
+        // 2. Badge Style Logic
+        var statusText = (data.status || "UNKNOWN").toUpperCase();
+        badge.textContent = statusText;
+        
+        // Remove old classes
+        badge.className = 'badge';
+
+        if (statusText.indexOf('SUCCESS') !== -1 || statusText.indexOf('COMPLETED') !== -1 || statusText.indexOf('APPROVED') !== -1) {
+          badge.classList.add('success');
+          badge.innerHTML = '<span>●</span> ' + statusText;
+        } else if (statusText.indexOf('REJECT') !== -1 || statusText.indexOf('FAIL') !== -1) {
+          badge.classList.add('failed');
+          badge.innerHTML = '<span>×</span> ' + statusText;
+        } else {
+          badge.classList.add('pending');
+          badge.innerHTML = '<span>○</span> ' + statusText;
+        }
+
+        // 3. Hash / UTR Logic
+        if (data.txHash && data.txHash !== "") {
+          hashSection.style.display = 'block';
+          document.getElementById('hashLabel').textContent = data.txLabel || "Transaction Details";
+          document.getElementById('displayHash').textContent = data.txHash;
+        } else {
+          hashSection.style.display = 'none';
+        }
+
+        // Show Result
+        resultArea.style.display = 'block';
+      }
+
+      function showError(msg) {
+        var errorBox = document.getElementById('error-msg');
+        errorBox.textContent = msg;
+        errorBox.style.display = 'block';
+      }
+    </script>
+  </body>
+</html>

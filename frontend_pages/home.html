@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-CRYPT HOME</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+        .slide-in { animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Smooth Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .hero-pattern {
+            background-color: #0f172a;
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-800">
+
+    <div class="w-full h-full min-h-[100dvh] flex flex-col slide-in">
+        
+        <div class="p-4 md:p-6 pb-2">
+            <div class="hero-pattern max-w-5xl mx-auto w-full rounded-[2.5rem] p-8 md:p-10 text-center text-white shadow-2xl relative overflow-hidden border border-slate-700">
+                <div class="absolute top-[-50px] right-[-50px] w-64 h-64 bg-blue-600 rounded-full mix-blend-overlay filter blur-[60px] opacity-30 animate-pulse"></div>
+                <div class="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-purple-600 rounded-full mix-blend-overlay filter blur-[60px] opacity-30 animate-pulse" style="animation-delay: 1s;"></div>
+
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/10 mb-5 shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <i class="fas fa-layer-group text-4xl text-blue-200"></i>
+                    </div>
+                    
+                    <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">D-CRYPT P2P</h1>
+                    <p class="text-sm md:text-base text-slate-400 font-medium tracking-[0.2em] uppercase mb-8">Secure Educational Exchange</p>
+                    
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full backdrop-blur-md shadow-lg shadow-emerald-500/10">
+                        <span class="relative flex h-2.5 w-2.5">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                        </span>
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wide">System Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-grow p-4 md:p-6">
+            <div class="max-w-5xl mx-auto space-y-8">
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center group relative overflow-hidden">
+                        <div class="absolute inset-0 bg-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider group-hover:text-blue-600 transition-colors">Fees</p>
+                            <p class="text-2xl font-bold text-slate-800">0%</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center group relative overflow-hidden">
+                        <div class="absolute inset-0 bg-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider group-hover:text-purple-600 transition-colors">KYC</p>
+                            <p class="text-2xl font-bold text-slate-800">No</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center group relative overflow-hidden">
+                        <div class="absolute inset-0 bg-orange-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative z-10">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider group-hover:text-orange-600 transition-colors">Multi Tokens</p>
+                            <p class="text-2xl font-bold text-slate-800">Active</p>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-xl hover:shadow-indigo-100 hover:-translate-y-1 transition-all duration-300 text-center">
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">User Type</p>
+                        <p class="text-sm font-bold text-indigo-700 mt-1">Beginner Friendly</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex flex-wrap items-center justify-between mb-5 px-2">
+                        <div class="flex items-center gap-3">
+                            <p class="text-sm font-bold text-slate-600 uppercase tracking-wider border-l-4 border-blue-600 pl-3">Select Action</p>
+                            
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-[10px] font-semibold text-slate-500 shadow-sm hover:bg-slate-50 transition-colors cursor-help" title="Use the navigation menu for quick access">
+                                <i class="fas fa-bars text-blue-500 animate-pulse"></i> 
+                                Also available in Menu
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        
+                        <a href="https://sites.google.com/view/d-cryptp2p/usdt-buy" target="_blank" class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl border border-green-100 shadow-sm hover:shadow-lg hover:shadow-green-100 hover:border-green-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center group h-full">
+                            <div class="w-12 h-12 rounded-full bg-white text-green-500 flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-green-500 group-hover:text-white transition-all duration-300 shadow-sm"><i class="fas fa-download"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm group-hover:text-green-700 transition-colors">Buy USDT</h4>
+                                <p class="text-[10px] text-slate-500">INR to Crypto</p>
+                            </div>
+                        </a>
+
+                        <a href="https://sites.google.com/view/d-cryptp2p/usdt-sell" target="_blank" class="bg-gradient-to-br from-red-50 to-rose-50 p-4 rounded-2xl border border-red-100 shadow-sm hover:shadow-lg hover:shadow-red-100 hover:border-red-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center group h-full">
+                            <div class="w-12 h-12 rounded-full bg-white text-red-500 flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-sm"><i class="fas fa-upload"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm group-hover:text-red-700 transition-colors">Sell USDT</h4>
+                                <p class="text-[10px] text-slate-500">Cash Out</p>
+                            </div>
+                        </a>
+
+                        <a href="https://sites.google.com/view/d-cryptp2p/altcoins-buy" target="_blank" class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl border border-blue-100 shadow-sm hover:shadow-lg hover:shadow-blue-100 hover:border-blue-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center group h-full">
+                            <div class="w-12 h-12 rounded-full bg-white text-blue-500 flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300 shadow-sm"><i class="fas fa-cart-plus"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm group-hover:text-blue-700 transition-colors">Buy Altcoins</h4>
+                                <p class="text-[10px] text-slate-500">ETH, SOL, etc.</p>
+                            </div>
+                        </a>
+
+                        <a href="https://sites.google.com/view/d-cryptp2p/altcoins-sell" target="_blank" class="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-2xl border border-orange-100 shadow-sm hover:shadow-lg hover:shadow-orange-100 hover:border-orange-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center group h-full">
+                            <div class="w-12 h-12 rounded-full bg-white text-orange-500 flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-orange-500 group-hover:text-white transition-all duration-300 shadow-sm"><i class="fas fa-money-bill-wave"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm group-hover:text-orange-700 transition-colors">Sell Altcoins</h4>
+                                <p class="text-[10px] text-slate-500">Liquidity</p>
+                            </div>
+                        </a>
+
+                        <a href="https://sites.google.com/view/d-cryptp2p/faucet" target="_blank" class="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-2xl border border-purple-100 shadow-sm hover:shadow-lg hover:shadow-purple-100 hover:border-purple-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center group h-full">
+                            <div class="w-12 h-12 rounded-full bg-white text-purple-500 flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 shadow-sm"><i class="fas fa-faucet"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm group-hover:text-purple-700 transition-colors">Faucet</h4>
+                                <p class="text-[10px] text-slate-500">Test Tokens</p>
+                            </div>
+                        </a>
+
+                        <a href="https://sites.google.com/view/d-cryptp2p/order-tracker?authuser=0" target="_blank" class="bg-gradient-to-br from-cyan-50 to-sky-50 p-4 rounded-2xl border border-cyan-100 shadow-sm hover:shadow-lg hover:shadow-cyan-100 hover:border-cyan-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center gap-3 text-center group h-full">
+                            <div class="w-12 h-12 rounded-full bg-white text-cyan-600 flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-cyan-600 group-hover:text-white transition-all duration-300 shadow-sm"><i class="fas fa-search-location"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm group-hover:text-cyan-700 transition-colors">Track Order</h4>
+                                <p class="text-[10px] text-slate-500">Check Status</p>
+                            </div>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div class="relative bg-white p-8 rounded-[2rem] border border-indigo-100 shadow-xl overflow-hidden group hover:border-indigo-300 transition-all duration-500">
+                    <div class="absolute top-0 right-0 p-6 opacity-5 text-8xl text-indigo-600 transform group-hover:rotate-12 transition-transform duration-700"><i class="fas fa-question-circle"></i></div>
+                    <div class="absolute -left-20 -bottom-20 w-40 h-40 bg-indigo-500 rounded-full blur-[80px] opacity-10"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="inline-block bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide border border-indigo-100">About Platform</div>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-3">Why D-CRYPT?</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-6 max-w-2xl">
+                            Designed for crypto newcomers! If you want to understand blockchain transactions, practice development, or participate in airdrops without risking large funds, this is for you. We offer the best rates compared to other P2P systems to help you learn safely.
+                        </p>
+                        <a href="https://t.me/CRYPTO_WITH_DYT" target="_blank" class="text-xs font-bold text-white bg-indigo-600 px-6 py-3 rounded-xl hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30 inline-flex items-center gap-2 transition-all transform active:scale-95">
+                            <i class="fab fa-telegram text-lg"></i> Join Telegram Channel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-green-200 hover:-translate-y-1 transition-all duration-300 group">
+                        <div class="w-10 h-10 rounded-lg bg-green-50 text-green-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform"><i class="fas fa-check-circle"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 group-hover:text-green-700 transition-colors">Auto-Validator</h4>
+                        <p class="text-xs text-slate-500 mt-2 leading-relaxed">Ensures correct address formats to prevent loss of funds automatically.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 group">
+                        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform"><i class="fas fa-undo-alt"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 group-hover:text-blue-700 transition-colors">Quick Refunds</h4>
+                        <p class="text-xs text-slate-500 mt-2 leading-relaxed">Wrong payments are refunded within 1-2 hours automatically.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 group">
+                        <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform"><i class="fas fa-user-shield"></i></div>
+                        <h4 class="font-bold text-sm text-slate-800 group-hover:text-slate-900 transition-colors">Privacy First</h4>
+                        <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                            We value privacy. You can use a dummy phone for non-critical orders, but a valid email is required.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-[2rem] p-6 shadow-sm relative overflow-hidden hover:shadow-md transition-shadow">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-200 rounded-full blur-[50px] opacity-20"></div>
+                    <p class="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-2">Project Limitations</p>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">Demo / Educational Use Only</h3>
+                    <p class="text-xs text-slate-600 mb-0 leading-relaxed max-w-3xl">
+                        This is a secure P2P demo project, not for commercial or bulk trading. Strict limits are enforced. Every order is personally verified by the admin to ensure genuine learning. Attempts to misuse the platform will result in a ban. For special requests, contact support.
+                    </p>
+                </div>
+
+                <div class="bg-white border border-slate-100 rounded-[2.5rem] p-6 md:p-8 shadow-xl relative overflow-hidden hover:shadow-2xl transition-shadow duration-500">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-indigo-50 to-purple-50 rounded-bl-full -mr-16 -mt-16 z-0"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-5 mb-6">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-500/30 transform -rotate-3">D</div>
+                            <div>
+                                <h3 class="font-bold text-xl text-slate-800">About the Admin</h3>
+                                <span class="inline-block bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide border border-indigo-100 mt-1">Project Lead</span>
+                            </div>
+                        </div>
+
+                        <div class="prose prose-sm text-xs text-slate-600 space-y-4 leading-relaxed max-w-2xl">
+                            <p>
+                                Hello, it's <strong>DYT</strong>! I'm a 19-year-old first-year student. I built this project because when I started my crypto and airdrop journey a few years ago, I faced huge struggles getting USDT and other tokens—they simply weren't easily available for beginners.
+                            </p>
+                            <p>
+                                I don't have extensive coding knowledge yet, but I developed the logic and designed this website using HTML with the help of AI tools. Everything here is under my direct control—from receiving INR to sending tokens—so no third-party authority is involved. I manually verify every transaction to ensure safety.
+                            </p>
+                            <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/50 italic text-indigo-900/80">
+                                <i class="fas fa-quote-left text-indigo-300 mr-2"></i>
+                                If you are new to crypto and want to learn about airdrops, join me—I promise you won't be disappointed!
+                            </div>
+                        </div>
+
+                        <div class="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Academic Verification</p>
+                                <p class="text-xs text-slate-600 font-medium flex items-center gap-2">
+                                    <i class="fas fa-university text-slate-400"></i> Future Institute of Engineering & Management
+                                </p>
+                                <p class="text-[10px] text-slate-400 ml-6 mt-0.5">(Dept: CSE | Roll: 25CSE018)</p>
+                            </div>
+                            
+                            <a href="http://T.me/QWERTYUIOPASDFGHJKLZXCVBNM1348" target="_blank" class="text-xs font-bold text-white bg-slate-900 hover:bg-black px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 flex items-center gap-2">
+                                <i class="fab fa-telegram-plane text-lg"></i> Contact DYT
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl p-5 flex flex-col md:flex-row items-center md:items-start gap-5 shadow-sm hover:shadow-md hover:border-red-300 transition-all">
+                    <div class="bg-white p-3 rounded-full text-red-500 shadow-sm shrink-0">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <h3 class="text-sm font-bold text-red-800 uppercase mb-1">Safety Protocol Active</h3>
+                        <p class="text-xs text-red-700 leading-relaxed font-medium">
+                            Strict limits enforced. Maximum transaction capped at <span class="font-bold underline decoration-red-400 decoration-2 underline-offset-2">20$ USDT</span> per order. 
+                            This is an educational platform. Manual verification is active for every order.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="bg-slate-900 text-slate-300 p-8 md:p-12 mt-auto border-t border-slate-800">
+            <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 text-center md:text-left">
+                
+                <div>
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-5">Supported Networks</p>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-2.5">
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fab fa-ethereum text-indigo-400 mr-1.5"></i> ETH</span>
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fas fa-sun text-purple-400 mr-1.5"></i> SOL</span>
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fas fa-coins text-yellow-400 mr-1.5"></i> BSC</span>
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fas fa-paper-plane text-blue-400 mr-1.5"></i> TON</span>
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fas fa-diamond text-red-400 mr-1.5"></i> TRX</span>
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fas fa-layer-group text-blue-300 mr-1.5"></i> ARB</span>
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fas fa-water text-blue-200 mr-1.5"></i> SUI</span>
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fas fa-mountain text-red-500 mr-1.5"></i> AVAX</span>
+                        <span class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-default"><i class="fas fa-cube text-purple-500 mr-1.5"></i> POL</span>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-5">Special Thanks To</p>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-5 text-xl text-slate-500">
+                        <i class="fab fa-google hover:text-white transition-colors cursor-pointer" title="Google Sites/Sheets"></i>
+                        <i class="fas fa-file-code hover:text-white transition-colors cursor-pointer" title="App Script"></i>
+                        <i class="fab fa-telegram hover:text-blue-400 transition-colors cursor-pointer" title="Telegram"></i>
+                        <i class="fas fa-robot hover:text-emerald-400 transition-colors cursor-pointer" title="AI Tools"></i>
+                    </div>
+                    <div class="mt-6 text-[10px] text-slate-600 border-t border-slate-800 pt-4">
+                        <p>&copy; 2025 D-CRYPT Project. Educational Use Only.</p>
+                        <p class="mt-1">Contact: <a href="mailto:pdyutiranjan@gmail.com" class="text-slate-400 hover:text-white transition-colors">pdyutiranjan@gmail.com</a></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

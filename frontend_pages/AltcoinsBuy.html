@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-CRYPT P2P BUY</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; }
+        .slide-in { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .error-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* Smooth Overlay Animation */
+        #tokenOverlay { transition: transform 0.3s ease-in-out; transform: translateY(100%); }
+        #tokenOverlay.open { transform: translateY(0); }
+    </style>
+</head>
+<body class="flex items-start justify-center min-h-screen p-4 overflow-y-auto">
+
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-gray-100 relative min-h-[750px] flex flex-col mb-10">
+        
+        <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 rounded-t-3xl shadow-lg z-10">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-wide">D-CRYPT BUY</h1>
+                    <p class="text-xs text-blue-200 font-medium tracking-wider">INSTANT TOKEN PURCHASE</p>
+                </div>
+                <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                    <i class="fas fa-shopping-cart text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="page1" class="p-6 flex-grow slide-in space-y-5 pb-20">
+            
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                <label class="block text-xs font-bold text-indigo-900 uppercase mb-2">Select Token to Buy</label>
+                
+                <button onclick="openOverlay()" class="w-full flex items-center justify-between bg-white border border-indigo-200 text-gray-500 font-bold py-3.5 px-4 rounded-xl shadow-sm active:scale-95 transition-all">
+                    <span id="selectedTokenDisplay">Choose a Token...</span>
+                    <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+                </button>
+                <input type="hidden" id="selectedTokenIndex" value="-1">
+
+                <div class="flex justify-between items-center mt-3 px-1">
+                    <span class="text-xs text-gray-500 font-medium">Live Price:</span>
+                    <span id="livePrice" class="text-sm font-mono font-bold text-gray-400">--</span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Your Wallet Address (To Receive)</label>
+                <div class="relative">
+                    <input type="text" id="userWallet" oninput="validateAddress()" placeholder="Paste your address here" class="w-full pl-4 pr-10 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono transition-all">
+                    <div id="addressIcon" class="absolute right-3 top-3 text-gray-300">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                </div>
+                <p id="addressMsg" class="text-[10px] mt-1 hidden font-bold"></p>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <div class="flex justify-between items-center mb-3">
+                     <span class="text-[10px] text-gray-500 font-bold uppercase">Buy Limits:</span>
+                     <div class="text-[9px] text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded font-bold border border-indigo-200">
+                        Min: <span id="minToken">0</span> | Max: <span id="maxToken">0</span>
+                     </div>
+                </div>
+
+                <div class="flex gap-3 relative">
+                    <div class="w-1/2">
+                        <label class="text-[9px] text-gray-400 uppercase font-bold block mb-1">Buy Amount</label>
+                        <input type="number" id="inputAmount" oninput="calculateINR()" placeholder="0.0" class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:border-indigo-500 outline-none font-bold text-gray-800 text-sm">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="text-[9px] text-gray-400 uppercase font-bold block mb-1">You Pay (INR)</label>
+                        <input type="text" id="outputINR" readonly placeholder="₹ 0.00" class="w-full p-2 border border-indigo-200 rounded-lg bg-indigo-50 text-indigo-700 font-bold outline-none text-sm">
+                    </div>
+                </div>
+                <p id="amountError" class="text-[10px] text-red-500 mt-2 font-medium hidden text-center"></p>
+            </div>
+
+            <div class="space-y-4 pt-2">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">UPI ID (For Refund)</label>
+                    <input type="text" id="upiId" placeholder="user@bank" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm font-medium">
+                    <p id="upiError" class="text-[10px] text-red-500 mt-1 hidden">Invalid UPI format.</p>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Email</label>
+                    <input type="email" id="email" placeholder="you@example.com" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm font-medium">
+                    <p id="emailError" class="text-[10px] text-red-500 mt-1 hidden">Invalid Email.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Phone Number</label>
+                    <input type="number" id="phone" placeholder="Phone Number (10 digit)" oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm font-medium">
+                    <p id="phoneError" class="text-[10px] text-red-500 mt-1 hidden">Must be exactly 10 digits.</p>
+                </div>
+
+                <input type="text" id="telegram" placeholder="Telegram ID (Optional)" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm font-medium">
+            </div>
+
+            <button onclick="goToPayment()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                Proceed to Pay <i class="fas fa-arrow-right text-xs"></i>
+            </button>
+        </div>
+
+        <div id="tokenOverlay" class="absolute inset-0 bg-white z-50 flex flex-col">
+            <div class="bg-gray-100 p-5 flex justify-between items-center border-b border-gray-200">
+                <h3 class="font-bold text-gray-800 text-lg">Select Token</h3>
+                <button onclick="closeOverlay()" class="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="tokenList" class="flex-grow overflow-y-auto p-4 space-y-3 pb-20">
+                </div>
+        </div>
+
+        <div id="page2" class="p-6 flex-grow hidden slide-in flex flex-col pb-20">
+             <button onclick="goBack()" class="mb-4 text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 font-medium w-fit">
+                <i class="fas fa-arrow-left"></i> Edit Order
+            </button>
+
+            <div class="text-center mb-6">
+                <p class="text-xs text-gray-500 font-bold uppercase">Total Payable Amount</p>
+                <h2 class="text-4xl font-bold text-indigo-700 mt-1" id="displayPayAmount">₹ 0.00</h2>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-indigo-100 shadow-lg flex flex-col items-center mb-6">
+                <div id="paymentQr" class="border-4 border-white shadow-md rounded-xl mb-4"></div>
+                
+                <p class="text-[10px] text-gray-400 mb-2 uppercase font-bold tracking-wide">Scan or Pay to UPI ID</p>
+                
+                <div class="w-full bg-indigo-50 rounded-xl p-3 flex items-center justify-between border border-indigo-100 relative group">
+                    <input type="text" id="adminUpi" value="YOUR_UPI_ID_HERE" readonly class="bg-transparent text-sm text-indigo-900 w-full outline-none font-mono font-bold px-1">
+                    <button onclick="forceCopy('adminUpi')" class="bg-white border border-indigo-200 text-indigo-600 hover:text-green-500 p-2 rounded-lg shadow-sm active:scale-90 transition-transform">
+                        <i class="far fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Transaction ID / UTR</label>
+                <input type="text" id="txHash" placeholder="Enter 12-digit UTR" class="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-mono shadow-sm">
+                <p id="hashError" class="text-[10px] text-red-500 mt-1 hidden font-medium">Invalid UTR (Must be 12+ chars).</p>
+            </div>
+
+            <button id="submitBtn" onclick="submitOrder()" class="mt-auto w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                <span>Confirm Payment</span>
+            </button>
+        </div>
+
+        <div id="page3" class="p-8 flex-grow hidden flex flex-col items-center justify-center text-center slide-in pb-20">
+            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-xl animate-bounce">
+                <i class="fas fa-check-circle text-5xl text-green-500"></i>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Order Placed!</h2>
+            <p class="text-sm text-gray-500 mb-6 px-2">Thank you for using D-CRYPT P2P.</p>
+            
+            <div class="text-[11px] text-indigo-700 bg-indigo-50 px-4 py-3 rounded-xl border border-indigo-100 mb-6 text-left shadow-sm">
+                <i class="fas fa-info-circle mr-1"></i> 
+                Copy this ID to track your order. Your tokens will be sent to your wallet soon after verification.
+            </div>
+
+            <div class="bg-white w-full p-5 rounded-2xl border-2 border-dashed border-gray-300 mb-6 relative">
+                <p class="text-[10px] text-gray-400 uppercase font-bold mb-2">Your Buy Order ID</p>
+                <div class="flex items-center justify-center gap-3">
+                    <p id="finalOrderId" class="text-xl font-mono font-bold text-gray-800 tracking-wider">CTB...</p>
+                    <button onclick="copyOrderId()" class="text-indigo-500 hover:text-indigo-700 p-2 bg-gray-50 rounded-full shadow-sm border border-gray-200 active:scale-90 transition-transform">
+                        <i class="far fa-copy text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="resetApp()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-black transition-all">
+                Buy More Tokens
+            </button>
+        </div>
+
+        <div class="bg-gray-50 p-6 text-center border-t border-gray-200 mt-auto">
+            <div class="mb-4">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-2 tracking-widest">Help & Support</p>
+                <div class="flex flex-col gap-1.5">
+                    <p class="text-[11px] text-gray-600 font-medium">
+                        <i class="fab fa-whatsapp text-green-500 mr-1.5 text-sm"></i>
+                        <i class="fab fa-telegram text-blue-500 mr-1.5 text-sm"></i> 
+                        Contact: <span class="text-gray-900 font-bold">YOUR_PHONE_NUMBER</span>
+                    </p>
+                    <p class="text-[11px] text-gray-600 font-medium">
+                        <i class="fas fa-envelope text-red-500 mr-1.5 text-sm"></i> 
+                        Email: <span class="text-gray-900 font-bold">YOUR_EMAIL_ADDRESS</span>
+                    </p>
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-400 border-t border-gray-200 pt-4">
+                Copyright ©️ Deserve D-CRYPT. Dev by <span class="font-bold text-indigo-500">DYT</span>.
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // REPLACE WITH YOUR GOOGLE APPS SCRIPT URL
+        const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL"; 
+        
+        // REPLACE WITH YOUR ADMIN UPI ID
+        const ADMIN_UPI = "YOUR_UPI_ID_HERE";
+        
+        const MIN_USD = 0.5;
+        const MAX_USD = 20.0;
+        const USD_TO_INR_RATE = 88; 
+
+        const REGEX_MAP = {
+            "EVM": /^0x[a-fA-F0-9]{40}$/,
+            "SOL": /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
+            "TRX": /^T[A-Za-z1-9]{33}$/,
+            "TON": /^(EQ|UQ)[A-Za-z0-9_-]{46}$/,
+            "SUI": /^0x[a-fA-F0-9]{64}$/
+        };
+
+        const tokens = [
+            { name: "Ethereum (ETH)", id: "ethereum", type: "EVM", icon: "fab fa-ethereum" },
+            { name: "Solana (SOL)", id: "solana", type: "SOL", icon: "fas fa-sun" },
+            { name: "Sui (SUI)", id: "sui", type: "SUI", icon: "fas fa-water" },
+            { name: "Avax-C", id: "avalanche-2", type: "EVM", icon: "fas fa-mountain" },
+            { name: "Ton", id: "the-open-network", type: "TON", icon: "fas fa-paper-plane" },
+            { name: "BNB", id: "binancecoin", type: "EVM", icon: "fas fa-coins" },
+            { name: "USDC (BNB Chain)", id: "usd-coin", type: "EVM", icon: "fas fa-dollar-sign" },
+            { name: "Base ETH", id: "ethereum", type: "EVM", icon: "fab fa-ethereum" }, 
+            { name: "Arbitrum", id: "arbitrum", type: "EVM", icon: "fas fa-layer-group" },
+            { name: "TRX (TRC20)", id: "tron", type: "TRX", icon: "fas fa-gem" },
+            { name: "USDC (Base)", id: "usd-coin", type: "EVM", icon: "fas fa-dollar-sign" }
+        ];
+
+        let priceCache = {}; const CACHE_DURATION = 300000; 
+        const FALLBACK_PRICES = {
+            "ethereum": 240000, "solana": 13000, "sui": 160, "avalanche-2": 3600,
+            "the-open-network": 480, "binancecoin": 54000, "usd-coin": 90, "tron": 13
+        };
+
+        let currentPriceINR = 0;
+        let userData = {};
+        let minTokenAmount = 0;
+        let maxTokenAmount = 0;
+
+        window.onload = function() {
+            populateOverlay();
+        };
+
+        // --- NEW OVERLAY SYSTEM ---
+        function populateOverlay() {
+            const list = document.getElementById('tokenList');
+            list.innerHTML = '';
+            tokens.forEach((t, index) => {
+                const btn = document.createElement('div');
+                btn.className = "flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 cursor-pointer transition-all";
+                btn.onclick = () => selectToken(index, t.name);
+                
+                btn.innerHTML = `
+                    <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mr-3">
+                        <i class="${t.icon} text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-800">${t.name}</p>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider">${t.type} Network</p>
+                    </div>
+                    <div class="ml-auto text-gray-300">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                `;
+                list.appendChild(btn);
+            });
+        }
+
+        function openOverlay() {
+            document.getElementById('tokenOverlay').classList.add('open');
+        }
+
+        function closeOverlay() {
+            document.getElementById('tokenOverlay').classList.remove('open');
+        }
+
+        function selectToken(index, name) {
+            document.getElementById('selectedTokenIndex').value = index;
+            document.getElementById('selectedTokenDisplay').innerText = name;
+            document.getElementById('selectedTokenDisplay').classList.remove('text-gray-500');
+            document.getElementById('selectedTokenDisplay').classList.add('text-indigo-900');
+            
+            closeOverlay();
+            fetchPrice(index);
+            validateAddress();
+        }
+
+        async function fetchPrice(index) {
+            const token = tokens[index];
+            const priceEl = document.getElementById('livePrice');
+            const now = Date.now();
+
+            if (priceCache[token.id] && (now - priceCache[token.id].time < CACHE_DURATION)) {
+                updateUIWithPrice(token, priceCache[token.id].value); return;
+            }
+            
+            priceEl.innerText = "Fetching...";
+            priceEl.className = "text-sm font-mono font-bold text-indigo-500 animate-pulse";
+
+            try {
+                const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${token.id}&vs_currencies=inr`);
+                if (!res.ok) throw new Error("Limit");
+                const data = await res.json();
+                const price = data[token.id].inr;
+                priceCache[token.id] = { value: price, time: now };
+                updateUIWithPrice(token, price);
+            } catch (e) {
+                if (FALLBACK_PRICES[token.id]) updateUIWithPrice(token, FALLBACK_PRICES[token.id]);
+                else priceEl.innerText = "Retry";
+            }
+        }
+
+        function updateUIWithPrice(token, price) {
+            const priceEl = document.getElementById('livePrice');
+            currentPriceINR = price;
+            priceEl.innerText = `1 ${token.name.split(' ')[0]} = ₹ ${price.toLocaleString()}`;
+            priceEl.className = "text-sm font-mono font-bold text-green-600";
+            minTokenAmount = (MIN_USD * USD_TO_INR_RATE) / currentPriceINR;
+            maxTokenAmount = (MAX_USD * USD_TO_INR_RATE) / currentPriceINR;
+            document.getElementById('minToken').innerText = minTokenAmount.toFixed(4) + " " + token.name.split(' ')[0];
+            document.getElementById('maxToken').innerText = maxTokenAmount.toFixed(4) + " " + token.name.split(' ')[0];
+            calculateINR();
+        }
+
+        function calculateINR() {
+            const amt = parseFloat(document.getElementById('inputAmount').value);
+            const err = document.getElementById('amountError');
+            if(amt && currentPriceINR) {
+                document.getElementById('outputINR').value = "₹ " + (amt * currentPriceINR).toFixed(2);
+                if(amt < minTokenAmount || amt > maxTokenAmount) {
+                    err.classList.remove('hidden');
+                    err.innerText = `Limit: ${minTokenAmount.toFixed(4)} - ${maxTokenAmount.toFixed(4)}`;
+                    return false;
+                }
+                err.classList.add('hidden');
+                return true;
+            }
+            return false;
+        }
+
+        function validateAddress() {
+            const idx = document.getElementById('selectedTokenIndex').value;
+            const addr = document.getElementById('userWallet').value.trim();
+            const msg = document.getElementById('addressMsg');
+            const icon = document.querySelector('#addressIcon i');
+
+            if(idx === "-1" || !addr) {
+                msg.className = "text-[10px] mt-1 hidden"; icon.className = "fas fa-shield-alt"; return false;
+            }
+            if(REGEX_MAP[tokens[idx].type].test(addr)) {
+                msg.innerText = "Valid Address Format ✅";
+                msg.className = "text-[10px] mt-1 font-bold text-green-600 block";
+                icon.className = "fas fa-check-circle text-green-500";
+                return true;
+            } else {
+                msg.innerText = `Invalid Format for ${tokens[idx].type} Network ❌`;
+                msg.className = "text-[10px] mt-1 font-bold text-red-500 block";
+                icon.className = "fas fa-times-circle text-red-500";
+                return false;
+            }
+        }
+
+        function goToPayment() {
+            const idx = document.getElementById('selectedTokenIndex').value;
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const upi = document.getElementById('upiId').value.trim();
+            let isValid = true;
+
+            document.querySelectorAll('.error-shake').forEach(el => el.classList.remove('error-shake'));
+            ['phoneError', 'emailError', 'upiError'].forEach(id => document.getElementById(id).classList.add('hidden'));
+
+            if(idx === "-1") { alert("Select a token."); return; }
+            if(!validateAddress()) { document.getElementById('userWallet').classList.add('error-shake'); isValid = false; }
+            if(!calculateINR()) { document.getElementById('inputAmount').classList.add('error-shake'); isValid = false; }
+            
+            if(!/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/.test(upi)) {
+                document.getElementById('upiId').classList.add('error-shake');
+                document.getElementById('upiError').classList.remove('hidden'); isValid = false;
+            }
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                document.getElementById('email').classList.add('error-shake');
+                document.getElementById('emailError').classList.remove('hidden'); isValid = false;
+            }
+            if(phone.length !== 10) {
+                document.getElementById('phone').classList.add('error-shake');
+                document.getElementById('phoneError').classList.remove('hidden'); isValid = false;
+            }
+
+            if(!isValid) return;
+
+            userData = { wallet: document.getElementById('userWallet').value, upi, email, phone, telegram: document.getElementById('telegram').value };
+            
+            document.getElementById('page1').classList.add('hidden');
+            document.getElementById('page2').classList.remove('hidden');
+            document.getElementById('page2').classList.add('slide-in');
+
+            const payAmt = document.getElementById('outputINR').value.replace('₹ ', '');
+            document.getElementById('displayPayAmount').innerText = "₹ " + payAmt;
+            const qrData = `upi://pay?pa=${ADMIN_UPI}&pn=D-CRYPT&am=${payAmt}&cu=INR`;
+            document.getElementById('paymentQr').innerHTML = "";
+            new QRCode(document.getElementById('paymentQr'), { text: qrData, width: 160, height: 160 });
+        }
+
+        function goBack() {
+            document.getElementById('page2').classList.add('hidden');
+            document.getElementById('page1').classList.remove('hidden');
+        }
+
+        function generateOrderId() {
+            const now = new Date();
+            const dd = String(now.getDate()).padStart(2, '0');
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yy = String(now.getFullYear()).slice(-2);
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const userNum = userData.phone.slice(-2) + Math.floor(Math.random() * 10);
+            return `CTB${dd}${mm}${yy}${hh}${min}${userNum}`;
+        }
+
+        function submitOrder() {
+            const hash = document.getElementById('txHash').value.trim();
+            const hashError = document.getElementById('hashError');
+            if(hash.length < 12) {
+                document.getElementById('txHash').classList.add('error-shake');
+                hashError.classList.remove('hidden'); return;
+            } else hashError.classList.add('hidden');
+
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = `<div class="loader"></div> Verifying...`;
+            btn.disabled = true;
+
+            const orderId = generateOrderId();
+            const payload = {
+                type: "BUY", orderId: orderId, date: new Date().toLocaleString(),
+                token: tokens[document.getElementById('selectedTokenIndex').value].name,
+                amount: document.getElementById('inputAmount').value,
+                inrValue: document.getElementById('outputINR').value,
+                userWallet: userData.wallet, upi: userData.upi,
+                phone: userData.phone, email: userData.email,
+                telegram: userData.telegram || "N/A", hash: hash
+            };
+
+            fetch(SCRIPT_URL, {
+                method: "POST", mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                document.getElementById('finalOrderId').innerText = orderId;
+                document.getElementById('page2').classList.add('hidden');
+                document.getElementById('page3').classList.remove('hidden');
+            }).catch(err => {
+                alert("Network Error");
+                btn.innerHTML = "Confirm Payment"; btn.disabled = false;
+            });
+        }
+
+        function resetApp() {
+            document.getElementById('page3').classList.add('hidden');
+            document.getElementById('page1').classList.remove('hidden');
+            // Clear Inputs
+            document.getElementById('txHash').value = "";
+            document.getElementById('inputAmount').value = "";
+            document.getElementById('outputINR').value = "";
+            document.getElementById('userWallet').value = "";
+            document.getElementById('upiId').value = "";
+            document.getElementById('email').value = "";
+            document.getElementById('phone').value = "";
+            document.getElementById('telegram').value = "";
+            
+            // Reset Overlay
+            document.getElementById('selectedTokenIndex').value = "-1";
+            document.getElementById('selectedTokenDisplay').innerText = "Choose a Token...";
+            document.getElementById('selectedTokenDisplay').classList.add('text-gray-500');
+            document.getElementById('selectedTokenDisplay').classList.remove('text-indigo-900');
+            
+            document.getElementById('livePrice').innerText = "--";
+            document.getElementById('addressMsg').className = "hidden";
+            document.querySelector('#addressIcon i').className = "fas fa-shield-alt";
+            
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').innerText = "Confirm Payment";
+        }
+
+        function copyOrderId() {
+            const orderId = document.getElementById('finalOrderId').innerText;
+            forceCopy('finalOrderId', true);
+            alert("Copy this ID to track your order. Your payment will be released soon after verification.");
+        }
+
+        function forceCopy(id, isText=false) {
+            const val = isText ? document.getElementById(id).innerText : document.getElementById(id).value;
+            const el = document.createElement('textarea');
+            el.value = val;
+            document.body.appendChild(el);
+            el.select();
+            el.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+    </script>
+</body>
+</html>
