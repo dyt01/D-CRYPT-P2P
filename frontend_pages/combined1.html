@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Portal</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        /* Base Glass Style */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        /* --- THEMES --- */
+        
+        /* THEME: PREMIUM GOLD (DYT) */
+        .theme-gold {
+            background: linear-gradient(145deg, #fffbeb, #fff7ed);
+            border: 2px solid #fbbf24;
+            box-shadow: 0 10px 40px rgba(245, 158, 11, 0.25);
+            transform: scale(1.02);
+        }
+        
+        /* DIAMOND (Roll 57) */
+        .theme-diamond {
+            background: linear-gradient(145deg, #ecfeff, #cfFAfe);
+            border: 2px solid #06b6d4;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+        }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        .loader {
+            width: 20px; height: 20px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #4f46e5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Hide Scrollbar for Horizontal Scroll */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // -----------------------------------------------------------
+        // ✅ YOUR DEPLOYED URL
+        // -----------------------------------------------------------
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKNoJ7kbLW1DaRz47EOskWLgK1JzTXUIB53RayvOw-bBjgmVSiYUWblHW8GW8QYU9RKg/exec"; 
+        // -----------------------------------------------------------
+
+        const App = () => {
+            const [query, setQuery] = useState("");
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState("");
+            const [theme, setTheme] = useState("default"); // default, gold, diamond
+
+            // Search Function
+            const handleSearch = async () => {
+                if (!query.trim()) return;
+                
+                setLoading(true);
+                setError("");
+                setData(null);
+                setTheme("default"); // Reset theme
+
+                try {
+                    // Fetch Data
+                    const response = await fetch(`${SCRIPT_URL}?q=${encodeURIComponent(query)}`);
+                    let result = await response.json();
+
+                    if (result.error) {
+                        setError(result.error);
+                    } else {
+                        // --- IDENTIFY THEME & USER ---
+                        const roll = result.roll ? String(result.roll) : "";
+                        const name = result.name ? result.name.toLowerCase() : "";
+
+                        // Rule 1: DYT (Roll 18 or name match) - GOLD THEME
+                        if (roll.endsWith("018") || name.includes("dyutiranjan") || name.includes("dyt")) {
+                            setTheme("gold");
+                            result.name = "DYT"; // Override Name
+                            fireConfetti();
+                        } 
+                        // Rule 2: Diamond (Roll 57)
+                        else if (roll.endsWith("057")) {
+                            setTheme("diamond");
+                        }
+
+                        setData(result);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    setError("Connection Error. Please check internet.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Confetti Helper
+            const fireConfetti = () => {
+                if (typeof confetti === "function") {
+                    confetti({
+                        particleCount: 150,
+                        spread: 100,
+                        origin: { y: 0.6 },
+                        colors: ['#FFD700', '#F59E0B', '#ffffff'] 
+                    });
+                }
+            };
+
+            // Helper: Format Percentage
+            const formatPct = (val) => {
+                let num = Number(val);
+                if (isNaN(num)) return 0;
+                if (num <= 1 && num > 0) num = num * 100;
+                return parseFloat(num.toFixed(2));
+            };
+
+            // Helper: Get Colors based on Theme & Percentage
+            const getStatusColor = (pct) => {
+                // Gold Theme Colors (Amber/Yellow)
+                if (theme === 'gold') return { text: 'text-amber-700', bg: 'bg-amber-500', bar: 'bg-gradient-to-r from-amber-400 to-yellow-500' };
+                
+                // Diamond Theme Colors (Cyan)
+                if (theme === 'diamond') return { text: 'text-cyan-700', bg: 'bg-cyan-500', bar: 'bg-gradient-to-r from-cyan-400 to-blue-500' };
+                
+                // Default logic
+                if (pct >= 75) return { text: 'text-emerald-600', bg: 'bg-emerald-500', bar: 'bg-emerald-500' };
+                if (pct >= 60) return { text: 'text-amber-600', bg: 'bg-amber-500', bar: 'bg-amber-500' };
+                return { text: 'text-rose-600', bg: 'bg-rose-500', bar: 'bg-rose-500' };
+            };
+
+            // Dynamic Icons
+            const MainIcon = () => {
+                if (theme === 'gold') return <i className="fas fa-crown text-3xl text-amber-500 animate-bounce"></i>; 
+                if (theme === 'diamond') return <i className="fas fa-gem text-3xl text-cyan-400"></i>;
+                return <i className="fas fa-user-graduate text-3xl text-indigo-600"></i>;
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col items-center p-4">
+                    
+                    {/* --- HEADER --- */}
+                    <div className="w-full max-w-md text-center mt-6 mb-8">
+                        <div className="inline-flex p-4 bg-white rounded-full shadow-sm mb-3">
+                            <MainIcon />
+                        </div>
+                        <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                            Unofficial Portal
+                        </h1>
+                        <div className="inline-block mt-2 px-4 py-1 rounded-full bg-white/50 border border-white/60">
+                            <span className="text-xs font-bold text-indigo-600 tracking-widest uppercase">
+                                CSE Dept • Sec (A,B,C)
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* --- SEARCH BOX --- */}
+                    <div className={`w-full max-w-md glass-card rounded-2xl p-6 relative z-10 
+                        ${theme === 'gold' ? 'theme-gold' : ''} 
+                        ${theme === 'diamond' ? 'theme-diamond' : ''}`}
+                    >
+                        <div className="relative mb-4">
+                            <i className="fas fa-search absolute left-4 top-4 text-slate-400"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Enter Roll (25CSE018, 18) or Name"
+                                className="w-full pl-10 pr-4 py-3 bg-white/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700 placeholder:font-normal"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            />
+                        </div>
+
+                        <button 
+                            onClick={handleSearch}
+                            disabled={loading || !query}
+                            className={`w-full py-3.5 rounded-xl text-white font-bold shadow-lg transition-transform active:scale-95 flex justify-center items-center gap-2
+                                ${theme === 'gold' ? 'bg-gradient-to-r from-amber-500 to-yellow-600' : 
+                                  theme === 'diamond' ? 'bg-gradient-to-r from-cyan-500 to-blue-500' : 
+                                  'bg-indigo-600 hover:bg-indigo-700'}`}
+                        >
+                            {loading ? <div className="loader"></div> : "Check Status"}
+                        </button>
+
+                        {error && (
+                            <div className="mt-4 p-3 bg-red-50 text-red-500 rounded-lg text-sm text-center border border-red-100">
+                                <i className="fas fa-circle-exclamation mr-1"></i> {error}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* --- RESULTS SECTION --- */}
+                    {data && (
+                        <div className="w-full max-w-md mt-6 pb-12 fade-in">
+                            
+                            {/* Updated Time Badge */}
+                            {data.lastUpdated && (
+                                <div className="flex justify-center mb-4">
+                                    <span className="bg-slate-800 text-slate-100 text-[10px] py-1 px-3 rounded-full font-mono shadow-md">
+                                        Last Updated: {data.lastUpdated}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* STUDENT CARD */}
+                            <div className={`glass-card rounded-2xl p-5 mb-5 border-l-4 flex justify-between items-center
+                                ${theme === 'gold' ? 'theme-gold border-amber-500' : 
+                                  theme === 'diamond' ? 'theme-diamond border-cyan-500' : 
+                                  'border-indigo-500'}`}
+                            >
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                        {data.name}
+                                        {theme === 'gold' && (
+                                            <span className="ml-2 px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-200 text-yellow-800 text-[10px] font-bold tracking-wide flex items-center gap-1 shadow-sm">
+                                               CREATOR 👑
+                                            </span>
+                                        )}
+                                        {theme === 'diamond' && <i className="fas fa-star text-cyan-500 text-sm"></i>}
+                                    </h2>
+                                    <p className="text-slate-500 text-sm font-mono font-semibold">{data.roll}</p>
+                                </div>
+                                <div className={`px-3 py-1 rounded-lg font-bold text-sm border
+                                    ${theme === 'gold' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                                      theme === 'diamond' ? 'bg-cyan-50 text-cyan-700 border-cyan-200' :
+                                      'bg-indigo-50 text-indigo-700 border-indigo-100'}`}
+                                >
+                                    Sec {data.section}
+                                </div>
+                            </div>
+
+                            {/* SUBJECT CARDS (Maths & Physics) */}
+                            <SubjectCard title="Maths" icon="fa-calculator" data={data.maths} getStatusColor={getStatusColor} formatPct={formatPct} />
+                            <SubjectCard title="Physics" icon="fa-atom" data={data.physics} getStatusColor={getStatusColor} formatPct={formatPct} />
+
+                            {/* BEE CARD (New Logic) */}
+                            <BeeCard beeData={data.bee} theme={theme} />
+
+                        </div>
+                    )}
+                    
+                    <div className="mt-auto py-6 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                        © Unofficial Portal • by DYT 2025
+                    </div>
+                </div>
+            );
+        };
+
+        // --- SUB COMPONENTS ---
+
+        const SubjectCard = ({ title, icon, data, getStatusColor, formatPct }) => {
+            const pct = formatPct(data.overall.pct);
+            const style = getStatusColor(pct);
+
+            const t1 = title === 'Maths' ? "KSR" : "BB";
+            const t2 = title === 'Maths' ? "TRC" : "SBM";
+            const d1 = title === 'Maths' ? data.ksr : data.bb;
+            const d2 = title === 'Maths' ? data.trc : data.sbm;
+
+            return (
+                <div className={`glass-card rounded-2xl p-5 mb-4 border-l-4`} style={{ borderLeftColor: style.bg.replace('bg-', 'var(--tw-colors-') }}>
+                    <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${title === 'Maths' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                                <i className={`fas ${icon}`}></i>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-700">{title}</h3>
+                                <div className="text-[10px] text-slate-400 font-bold uppercase">
+                                    {data.overall.att} / {data.overall.held} Attended
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className={`text-2xl font-bold ${style.text}`}>{pct}%</div>
+                            <div className="text-[10px] uppercase text-slate-400 font-bold">Overall</div>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                        <TeacherRow name={t1} data={d1} style={style} />
+                        <TeacherRow name={t2} data={d2} style={style} />
+                    </div>
+                </div>
+            );
+        };
+
+        const TeacherRow = ({ name, data, style }) => {
+            if (!data || (data.held === 0 && data.att === 0)) return null; 
+            
+            const pct = data.held > 0 ? (data.att / data.held) * 100 : 0;
+            const width = Math.min(pct, 100);
+
+            return (
+                <div className="relative">
+                    <div className="flex justify-between text-xs mb-1 font-semibold text-slate-600">
+                        <span>{name}</span>
+                        <span className="bg-slate-100 px-2 rounded text-slate-500">{data.att}/{data.held}</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div className={`h-full rounded-full ${style.bar} transition-all duration-500`} style={{ width: `${width}%` }}></div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- BEE CARD COMPONENT ---
+        const BeeCard = ({ beeData, theme }) => {
+            // Error State for BEE
+            if (!beeData || beeData.error) {
+                return (
+                    <div className={`glass-card rounded-2xl p-5 border-l-4 border-gray-400`}>
+                         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                            <i className="fas fa-bolt text-gray-500"></i>
+                            <h3 className="font-bold text-slate-700">BEE</h3>
+                        </div>
+                        <div className="text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                            <p className="text-gray-500 font-semibold text-sm">Data not found / Not synced</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Colors based on BEE Percentage
+            const pct = beeData.stats.pct;
+            let colorClass = "text-rose-600";
+            let barClass = "bg-rose-500";
+            let borderColor = "#f43f5e"; // Rose
+
+            if (pct >= 75) { 
+                colorClass = "text-emerald-600"; 
+                barClass = "bg-emerald-500"; 
+                borderColor = "#10b981"; // Emerald
+            } else if (pct >= 60) { 
+                colorClass = "text-amber-600"; 
+                barClass = "bg-amber-500"; 
+                borderColor = "#f59e0b"; // Amber
+            }
+
+            // Theme Override
+            if (theme === 'gold') {
+                colorClass = "text-amber-700";
+                barClass = "bg-amber-500";
+                borderColor = "#f59e0b";
+            }
+
+            return (
+                <div className={`glass-card rounded-2xl p-5 mb-4 border-l-4 ${theme === 'gold' ? 'theme-gold' : ''}`}
+                     style={{ borderLeftColor: borderColor }}>
+                    
+                    {/* Header */}
+                    <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-yellow-50 text-yellow-600">
+                                <i className="fas fa-bolt"></i>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-700">BEE</h3>
+                                <div className="text-[10px] text-slate-400 font-bold uppercase">
+                                    {beeData.stats.attended} / {beeData.stats.total} Attended
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className={`text-2xl font-bold ${colorClass}`}>{pct}%</div>
+                            <div className="text-[10px] uppercase text-slate-400 font-bold">Overall</div>
+                        </div>
+                    </div>
+
+                    {/* Timeline Scroll */}
+                    <div className="mt-4">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-wider flex justify-between">
+                            <span>Attendance Timeline</span>
+                            <span className="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-500">Since Nov 25</span>
+                        </div>
+                        
+                        <div className="flex gap-3 overflow-x-auto pb-3 no-scrollbar">
+                            {/* Render History (Reversed to show newest first if needed, or normal) */}
+                            {beeData.history.slice().reverse().map((day, idx) => (
+                                <div key={idx} className="flex flex-col items-center min-w-[40px]">
+                                    <span className="text-[9px] uppercase font-bold text-slate-400 mb-1">{day.day}</span>
+                                    
+                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm transition-transform hover:scale-110 
+                                        ${day.isPresent 
+                                            ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' 
+                                            : 'bg-rose-50 border border-rose-200 text-rose-500'}`}>
+                                        {day.isPresent ? (day.attended > 1 ? "2" : "P") : "A"}
+                                    </div>
+                                    
+                                    <span className="text-[8px] font-medium text-slate-400 mt-1 whitespace-nowrap">{day.date}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
